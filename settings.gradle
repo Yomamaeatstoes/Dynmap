@@ -1,0 +1,35 @@
+pluginManagement {
+  repositories {
+    gradlePluginPortal()
+    maven { url "https://papermc.io/repo/repository/maven-public/" }
+    maven { url "https://maven.fabricmc.net/" }
+  }
+}
+
+rootProject.name = 'dynmap-common'
+
+include ':spigot'
+include ':bukkit-helper-113-2'
+include ':bukkit-helper-120'
+include ':bukkit-helper-120-2'
+include ':bukkit-helper'
+include ':dynmap-api'
+include ':DynmapCore'
+include ':DynmapCoreAPI'
+include ':fabric-1.20.2'
+include ':fabric-1.20'
+include ':forge-1.20.2'
+include ':forge-1.20'
+
+project(':spigot').projectDir = "$rootDir/spigot" as File
+project(':bukkit-helper-120').projectDir = "$rootDir/bukkit-helper-120" as File
+project(':bukkit-helper-120-2').projectDir = "$rootDir/bukkit-helper-120-2" as File
+project(':bukkit-helper').projectDir = "$rootDir/bukkit-helper" as File
+project(':dynmap-api').projectDir = "$rootDir/dynmap-api" as File
+project(':DynmapCore').projectDir = "$rootDir/DynmapCore" as File
+project(':DynmapCoreAPI').projectDir = "$rootDir/DynmapCoreAPI" as File
+project(':fabric-1.20.2').projectDir = "$rootDir/fabric-1.20.2" as File
+project(':fabric-1.20').projectDir = "$rootDir/fabric-1.20" as File
+project(':forge-1.20.2').projectDir = "$rootDir/forge-1.20.2" as File
+project(':forge-1.20').projectDir = "$rootDir/forge-1.20" as File
+
