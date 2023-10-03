@@ -1,35 +1,12 @@
 package org.dynmap.bukkit;
 
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import com.tcoded.folialib.FoliaLib;
+import com.tcoded.folialib.util.InvalidTickDelayNotifier;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.CustomChart;
 import org.bstats.json.JsonObjectBuilder;
 import org.bstats.json.JsonObjectBuilder.JsonObject;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.ChunkSnapshot;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -41,32 +18,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockBurnEvent;
-import org.bukkit.event.block.BlockFadeEvent;
-import org.bukkit.event.block.BlockFormEvent;
-import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.block.BlockGrowEvent;
-import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPistonRetractEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.block.BlockRedstoneEvent;
-import org.bukkit.event.block.BlockSpreadEvent;
-import org.bukkit.event.block.LeavesDecayEvent;
-import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerBedLeaveEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.server.PluginEnableEvent;
-import org.bukkit.event.world.ChunkPopulateEvent;
-import org.bukkit.event.world.SpawnChangeEvent;
-import org.bukkit.event.world.StructureGrowEvent;
-import org.bukkit.event.world.WorldLoadEvent;
-import org.bukkit.event.world.WorldUnloadEvent;
+import org.bukkit.event.world.*;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.Plugin;
@@ -74,54 +30,50 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
-import org.dynmap.DynmapAPI;
-import org.dynmap.DynmapChunk;
-import org.dynmap.DynmapCommonAPIListener;
-import org.dynmap.DynmapCore;
-import org.dynmap.DynmapLocation;
-import org.dynmap.DynmapWebChatEvent;
-import org.dynmap.DynmapWorld;
-import org.dynmap.Log;
-import org.dynmap.MapManager;
-import org.dynmap.MapType;
-import org.dynmap.PlayerList;
+import org.dynmap.*;
 import org.dynmap.bukkit.helper.BukkitVersionHelper;
 import org.dynmap.bukkit.helper.BukkitWorld;
 import org.dynmap.bukkit.helper.SnapshotCache;
-import org.dynmap.bukkit.permissions.BukkitPermissions;
-import org.dynmap.bukkit.permissions.NijikokunPermissions;
-import org.dynmap.bukkit.permissions.OpPermissions;
-import org.dynmap.bukkit.permissions.PEXPermissions;
-import org.dynmap.bukkit.permissions.PermBukkitPermissions;
-import org.dynmap.bukkit.permissions.GroupManagerPermissions;
-import org.dynmap.bukkit.permissions.PermissionProvider;
-import org.dynmap.bukkit.permissions.VaultPermissions;
-import org.dynmap.bukkit.permissions.bPermPermissions;
-import org.dynmap.bukkit.permissions.LuckPermsPermissions;
-import org.dynmap.bukkit.permissions.LuckPerms5Permissions;
+import org.dynmap.bukkit.permissions.*;
 import org.dynmap.common.BiomeMap;
 import org.dynmap.common.DynmapCommandSender;
+import org.dynmap.common.DynmapListenerManager.EventType;
 import org.dynmap.common.DynmapPlayer;
 import org.dynmap.common.DynmapServerInterface;
 import org.dynmap.common.chunk.GenericChunkCache;
-import org.dynmap.common.DynmapListenerManager.EventType;
 import org.dynmap.common.chunk.GenericMapChunkCache;
 import org.dynmap.hdmap.HDMap;
 import org.dynmap.markers.MarkerAPI;
 import org.dynmap.modsupport.ModSupportImpl;
-import org.dynmap.renderer.DynmapBlockState;
 import org.dynmap.utils.MapChunkCache;
 import org.dynmap.utils.Polygon;
 import org.dynmap.utils.VisibilityLimit;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class DynmapPlugin extends JavaPlugin implements DynmapAPI {
     private DynmapCore core;
+
+    private FoliaLib foliaLib;
+
+    //Folialib Instance
+    foliaLib = new FoliaLib(this);
     private PermissionProvider permissions;
     private String version;
     public PlayerList playerList;
     private MapManager mapManager;
     public static DynmapPlugin plugin;
     public PluginManager pm;
+
     private Metrics metrics;
     private BukkitEnableCoreCallback enabCoreCB = new BukkitEnableCoreCallback();
     private Method ismodloaded;
@@ -1825,4 +1777,6 @@ public class DynmapPlugin extends JavaPlugin implements DynmapAPI {
         }
         return false;
     }
+    public @NotNull FoliaLib getFoliaLib() {
+        return foliaLib;
 }

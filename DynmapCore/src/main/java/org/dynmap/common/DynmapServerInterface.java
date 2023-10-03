@@ -31,7 +31,7 @@ public abstract class DynmapServerInterface {
      * @param <T> - return value type for method called
      * @return future for completion of call
      */
-    public abstract <T> Future<T> callSyncMethod(Callable<T> task);
+    public abstract <T> Future<T> SyncMethod(Callable<T> task);
     /**
      * Get list of online players
      * @return list of online players
